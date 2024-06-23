@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Workspace, View, Vault, TFile } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Workspace, View, Vault, TFile, MarkdownView } from 'obsidian';
 import { DIAGRAM_VIEW_TYPE } from './constants';
 import { DiagramsApp } from './DiagramsApp';
 import * as React from "react";
@@ -82,6 +82,17 @@ export default class DiagramsView extends ItemView {
 
         const refreshMarkdownViews = async () => {
             // Haven't found a way to refresh the hostView.
+            this.app.workspace.getLeavesOfType('markdown').forEach((leaf) => {
+                const view = leaf.view
+                const originalData = (view as MarkdownView).getViewData();
+                if (view instanceof MarkdownView && originalData.includes(`![[${this.svgPath}]]`)) {
+                    const updatingData = originalData.replace(`![[${this.svgPath}]]`, `${this.svgPath} is updating`)
+                    view.setViewData(updatingData, false)
+                    window.setTimeout(() => {
+                        view.setViewData(originalData, false)
+                    }, 500)
+                }
+            })
         }
 
         const insertDiagram = () => {
